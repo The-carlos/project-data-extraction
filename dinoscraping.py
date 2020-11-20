@@ -20,9 +20,14 @@ exceptions = [' — possible junior synonym of ', ' – possible junior synonym 
 for dinosaur in list_of_dinosaurs:
     if dinosaur == 'nomen nudum':
         list_of_dinosaurs.remove(dinosaur)
-print(len(list_of_dinosaurs))
+#print(len(list_of_dinosaurs))
 
 #Eliminating the duplicated elements:
 #clean_list_of_dinosaurs = [dinosaur for dinosaur in list_of_dinosaurs if dinosaur not in list_of_dinosaurs]
 clean_list_of_dinosaurs = list(dict.fromkeys(list_of_dinosaurs))
-print(len(clean_list_of_dinosaurs))
+#iprint(len(clean_list_of_dinosaurs))
+
+#Then we obtain the URL of each dinosaur.
+urls = soup.select('a')
+urls_clean = [url.get('href') for url in urls]
+print(urls_clean)
