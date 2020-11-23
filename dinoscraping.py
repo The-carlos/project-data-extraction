@@ -4,7 +4,9 @@ import requests
 from bs4 import BeautifulSoup
 import time
 import numpy as np
+import re
 
+"""
 #URL to scrap
 url = 'https://en.wikipedia.org/wiki/List_of_dinosaur_genera'
 
@@ -66,6 +68,7 @@ for url in range(len(dino_urls)):
     progress += 1
     print(f'{(progress*100)/len(dino_urls)}%')
 
+#An important Note about the following 3 lines of code: Lately I found that I can convert my two list into a single dictionary by using something like: dino_dict = {'URL': url, 'Dinosaur': dinosaur, 'Info':data_info} I didn't this because I would have to re scrap all pages and it takes like 40 minutes to my computer.
 #First we create a DataFrame from the list o tuples called dino_data
 dino_df = pd.DataFrame(dino_data, columns = ['URL','Dinosaur'])
 #Then we create another DataFrame with all paragraphs we scrape from every single dinosaur article
@@ -75,10 +78,66 @@ dino_df = pd.concat([dino_df, dino_details], ignore_index = True, axis = 1)
 
 file_name = 'Dino_data.xlsx'
 
+#Then I convert all my data into a Excel File so i can read, manipulate and clean my data from here instead of make the whole scrap over and over again.
 dino_df.to_excel(file_name)
 print('DataFrame is written to Excel File successfully!')
+"""
 
-#This way Lengths are the same 
-#dino_df['Info'] = dino_info
+"""Ok, from this point I will comment everythig in above so I don't have to scrap and I will create a new DataFrame from the excel file I create, this way everything will be we much more fast"""
 
+file_name = 'Dino_data.xlsx'
+dino_df = pd.read_excel(file_name)
+#The excel file brings an additional column for number of element wich we don't need. We dorp it.
+dino_df.drop('Unnamed: 0', inplace = True, axis = 1)
+dino_df.columns = ['URLs','Dinosaur','Info']
 
+dino_info = dino_df['Info'].to_dict()
+dino_info = dino_info.values()
+heights = []
+progress = 0
+
+#Next lines will find the height of every dinosaur
+for element in dino_info:
+    if re.findall('\d+\smeters',element):
+        height = re.findall('\d+\smeters', element)
+        heights.append(height)
+
+    else:
+        heights.append(list('-'))
+    progress += 1 
+
+heights_clean = []
+for element in heights:
+    for height in enumerate(element):
+        if height[0] == 0:
+            heights_clean.append(height[1])
+
+"""for height in heights_clean:
+    print(height)
+    time.sleep(0.05)"""
+
+#Next lines will find the weight
+weights = []
+for element in dino_info:
+    if re.findall('\d+\stonnes|\d+\skilograms',element):
+        weight = re.findall('\d+\stonnes|\d+\skilograms', element)
+        weights.append(weight)
+
+    else:
+        weights.append(list('-'))
+
+weights_clean = []
+for element in weights:
+    for weight in enumerate(element):
+        if weight[0] == 0:
+            weights_clean.append(weight[1])
+
+dino_df.drop('Info', inplace = True, axis = 1)
+heights_df = pd.DataFrame(heights_clean, columns = ['Height'])
+weights_df = pd.DataFrame(weights_clean , columns = ['Weight'])
+dino_df = pd.concat([dino_df, heights_df, weights_df], ignore_index = True, axis = 1) 
+dino_df.columns = ['URL','Dinosaur','Height','Weight']
+print(dino_df)
+file_name = 'Dino_data.csv'
+dino_df.to_csv(file_name)
+print('DataFrame successfully exported to CSV file!')
